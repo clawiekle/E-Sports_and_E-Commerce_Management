@@ -38,6 +38,15 @@ public class DatabaseConnection {
         }
     }
 
+    private static void addColumnIfMissing(Connection c, String table, String column, String definition) throws SQLException {
+        try (ResultSet rs = c.getMetaData().getColumns(null, null, table, column)) {
+            if (rs.next()) return;
+        }
+        try (Statement st = c.createStatement()) {
+            st.executeUpdate("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+        }
+    }
+
     public static void main(String[] args) {
 
         String baseUrl = "jdbc:mysql://localhost:3306/";
@@ -118,10 +127,18 @@ public class DatabaseConnection {
                             "tournament_name VARCHAR(50) NOT NULL," +
                             "gameID INT NOT NULL," +
                             "max_teams INT NOT NULL," +
+                            "best_of INT NOT NULL DEFAULT 3," +
+                            "start_datetime DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                            "status VARCHAR(12) NOT NULL DEFAULT 'UPCOMING'," +
                             "FOREIGN KEY (gameID) REFERENCES games_table(gameID)" +
                             ")"
             );
             System.out.println("Table 'Tournament Table' ready.");
+
+            //upgrade a tournament_table created before these columns existed
+            addColumnIfMissing(tempCon, "tournament_table", "best_of", "INT NOT NULL DEFAULT 3");
+            addColumnIfMissing(tempCon, "tournament_table", "start_datetime", "DATETIME DEFAULT CURRENT_TIMESTAMP");
+            addColumnIfMissing(tempCon, "tournament_table", "status", "VARCHAR(12) NOT NULL DEFAULT 'UPCOMING'");
 
             //Tournament Teams (Bridge) Table
             stmt.executeUpdate(
