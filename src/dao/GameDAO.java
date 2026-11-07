@@ -11,8 +11,8 @@ import java.sql.Statement;
 
 public class GameDAO {
 
-    public SinglyLinkedList<Game> getAll() throws SQLException {
-        SinglyLinkedList<Game> games = new SinglyLinkedList<>();
+    public SinglyLinkedList getAll() throws SQLException {
+        SinglyLinkedList games = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery("SELECT gameID, game_name FROM games_table ORDER BY game_name")) {

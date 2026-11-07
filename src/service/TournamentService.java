@@ -4,17 +4,12 @@ import dao.ActivityDAO;
 import dao.GameDAO;
 import dao.TournamentDAO;
 import dsa.SinglyLinkedList;
-import model.Game;
 import model.Team;
 import model.Tournament;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
-/**
- * CRUD, team registration and the real-time start rule for tournaments.
- * Methods that can fail validation return an error message (null = success).
- */
 public class TournamentService {
 
     private final TournamentDAO tournamentDAO = new TournamentDAO();
@@ -26,7 +21,7 @@ public class TournamentService {
         tournamentDAO.startDueTournaments(LocalDateTime.now());
     }
 
-    public SinglyLinkedList<Tournament> getAll(String search) throws SQLException {
+    public SinglyLinkedList getAll(String search) throws SQLException {
         syncStatuses();
         return tournamentDAO.getAll(search == null ? "" : search.trim());
     }
@@ -36,7 +31,7 @@ public class TournamentService {
         return tournamentDAO.getById(id);
     }
 
-    public SinglyLinkedList<Game> getGames() throws SQLException {
+    public SinglyLinkedList getGames() throws SQLException {
         return gameDAO.getAll();
     }
 
@@ -97,11 +92,11 @@ public class TournamentService {
 
     // ------------------------------------------------------------------ teams
 
-    public SinglyLinkedList<Team> getTeams(Tournament t) throws SQLException {
+    public SinglyLinkedList getTeams(Tournament t) throws SQLException {
         return tournamentDAO.getTeams(t.getTournamentID());
     }
 
-    public SinglyLinkedList<Team> getAvailableTeams(Tournament t) throws SQLException {
+    public SinglyLinkedList getAvailableTeams(Tournament t) throws SQLException {
         return tournamentDAO.getAvailableTeams(t.getTournamentID(), t.getGameID());
     }
 
@@ -112,7 +107,9 @@ public class TournamentService {
         if (current.hasBegun()) return "The tournament has already begun; teams can no longer be changed.";
         if (team.getGameID() != current.getGameID()) return "That team plays a different game.";
         if (current.getRegisteredTeams() >= current.getMaxTeams()) return "The tournament is already full.";
-        for (Team registered : tournamentDAO.getTeams(current.getTournamentID())) {
+        SinglyLinkedList registeredTeams = tournamentDAO.getTeams(current.getTournamentID());
+        for (int i = 0; i < registeredTeams.size(); i++) {
+            Team registered = (Team) registeredTeams.get(i);
             if (registered.getTeamID() == team.getTeamID()) return "That team is already registered.";
         }
         tournamentDAO.addTeam(current.getTournamentID(), team.getTeamID());

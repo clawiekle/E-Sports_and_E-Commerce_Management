@@ -23,12 +23,12 @@ public class TournamentDAO {
     // ------------------------------------------------------------ tournaments
 
     /** All tournaments (newest first), optionally filtered by tournament or game name. */
-    public SinglyLinkedList<Tournament> getAll(String search) throws SQLException {
+    public SinglyLinkedList getAll(String search) throws SQLException {
         boolean filter = search != null && !search.isEmpty();
         String sql = SELECT + (filter ? "WHERE tr.tournament_name LIKE ? OR g.game_name LIKE ? " : "")
                 + "ORDER BY tr.tournamentID DESC";
 
-        SinglyLinkedList<Tournament> list = new SinglyLinkedList<>();
+        SinglyLinkedList list = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filter) {
@@ -169,7 +169,7 @@ public class TournamentDAO {
 
     // ------------------------------------------------------------------ teams
 
-    public SinglyLinkedList<Team> getTeams(int tournamentId) throws SQLException {
+    public SinglyLinkedList getTeams(int tournamentId) throws SQLException {
         String sql = "SELECT t.teamID, t.team_name, t.player_name, t.gameID, g.game_name " +
                 "FROM tournament_teams_table tt JOIN team_table t ON tt.teamID = t.teamID " +
                 "JOIN games_table g ON t.gameID = g.gameID WHERE tt.tournamentID = ? ORDER BY t.teamID";
@@ -177,7 +177,7 @@ public class TournamentDAO {
     }
 
     /** Teams of the given game that are not registered in this tournament yet. */
-    public SinglyLinkedList<Team> getAvailableTeams(int tournamentId, int gameId) throws SQLException {
+    public SinglyLinkedList getAvailableTeams(int tournamentId, int gameId) throws SQLException {
         String sql = "SELECT t.teamID, t.team_name, t.player_name, t.gameID, g.game_name " +
                 "FROM team_table t JOIN games_table g ON t.gameID = g.gameID " +
                 "WHERE t.gameID = ? AND t.teamID NOT IN " +
@@ -185,8 +185,8 @@ public class TournamentDAO {
         return queryTeams(sql, gameId, tournamentId);
     }
 
-    private SinglyLinkedList<Team> queryTeams(String sql, int first, int second) throws SQLException {
-        SinglyLinkedList<Team> teams = new SinglyLinkedList<>();
+    private SinglyLinkedList queryTeams(String sql, int first, int second) throws SQLException {
+        SinglyLinkedList teams = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, first);

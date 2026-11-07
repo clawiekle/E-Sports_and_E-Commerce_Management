@@ -10,10 +10,10 @@ import java.sql.SQLException;
 
 public class MatchDAO {
 
-    public SinglyLinkedList<Match> findByTournament(int tournamentId) throws SQLException {
+    public SinglyLinkedList findByTournament(int tournamentId) throws SQLException {
         String sql = "SELECT matchID, tournamentID, team1ID, team2ID, team1_score, team2_score, winnerID " +
                 "FROM match_table WHERE tournamentID = ? ORDER BY matchID";
-        SinglyLinkedList<Match> list = new SinglyLinkedList<>();
+        SinglyLinkedList list = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, tournamentId);

@@ -3,13 +3,6 @@ package dsa;
 import model.Match;
 import model.Team;
 
-/**
- * One node of the bracket tree.
- *  - Leaf (round 0): an entrant team, or a BYE when team == null.
- *  - Inner node (round 1 = first round ... last round = final): a match between the teams
- *    advancing out of its left and right child. {@link #getTeam()} is the team that comes OUT of
- *    this node (the match winner, or the team that got a bye), or null while still undecided (TBD).
- */
 public class MatchNode {
 
     private final int round;
@@ -33,7 +26,7 @@ public class MatchNode {
     }
 
     /** Inner node constructor: works out who advances from the children and the recorded results. */
-    MatchNode(int round, MatchNode left, MatchNode right, SinglyLinkedList<Match> results) {
+    MatchNode(int round, MatchNode left, MatchNode right, SinglyLinkedList results) {
         this.round = round;
         this.left = left;
         this.right = right;
@@ -45,7 +38,8 @@ public class MatchNode {
         } else if (right.bye) {
             this.team = left.team;
         } else if (left.team != null && right.team != null) {
-            for (Match m : results) {
+            for (int i = 0; i < results.size(); i++) {
+                Match m = (Match) results.get(i);   // cast Object back to Match
                 int a = left.team.getTeamID();
                 int b = right.team.getTeamID();
                 boolean same = m.getTeam1ID() == a && m.getTeam2ID() == b;

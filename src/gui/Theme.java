@@ -5,14 +5,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 
-/** Shared colours, fonts and small widgets for the admin screens (yellow / grey / black). */
 public final class Theme {
     private Theme() {}
 
-    public static final Color YELLOW = new Color(0x49, 0x08, 0x17);        // maroon #490817
-    public static final Color YELLOW_DARK = new Color(0x6E, 0x1A, 0x2E);   // active / header shade
-    public static final Color YELLOW_LIGHT = new Color(0x8A, 0x2B, 0x42);  // hover shade
-    public static final Color GREY = new Color(0xFF, 0xF8, 0xE7);          // cream #FFF8E7
+    public static final Color MAROON = new Color(0x49, 0x08, 0x17);        // maroon #490817
+    public static final Color MAROON_DARK = new Color(0x6E, 0x1A, 0x2E);   // active / header shade
+    public static final Color MAROON_LIGHT = new Color(0x8A, 0x2B, 0x42);  // hover shade
+    public static final Color CREAM = new Color(0xFF, 0xF8, 0xE7);          // cream #FFF8E7
     public static final Color INK = new Color(0xFF, 0xF8, 0xE7);           // cream text on maroon
 
     public static final Font BASE = new Font("Segoe UI", Font.PLAIN, 14);

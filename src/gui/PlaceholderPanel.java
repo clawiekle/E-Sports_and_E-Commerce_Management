@@ -8,7 +8,7 @@ import java.awt.*;
 public class PlaceholderPanel extends JPanel {
 
     public PlaceholderPanel(String title) {
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         setLayout(new BorderLayout(0, 20));
         setBorder(new EmptyBorder(25, 25, 25, 25));
 
@@ -17,7 +17,7 @@ public class PlaceholderPanel extends JPanel {
         heading.setForeground(new Color(0, 0, 0));
         add(heading, BorderLayout.NORTH);
 
-        Theme.Card card = new Theme.Card(Theme.YELLOW, 20);
+        Theme.Card card = new Theme.Card(Theme.MAROON, 20);
         card.setLayout(new GridBagLayout());
         JLabel note = new JLabel("This section is coming next.");
         note.setFont(new Font("Segoe UI", Font.PLAIN, 18));

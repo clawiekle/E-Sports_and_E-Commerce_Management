@@ -20,7 +20,7 @@ public class BracketDiagram extends JPanel {
     private static final int ROW_GAP = 46;
     private static final int MARGIN = 30;
 
-    private static final Color BOX = Theme.YELLOW;
+    private static final Color BOX = Theme.MAROON;
     private static final Color BOX_TBD = new Color(0x9A, 0x7B, 0x83);
     private static final Color CHAMPION = new Color(0xA3, 0x23, 0x45);
 
@@ -30,7 +30,7 @@ public class BracketDiagram extends JPanel {
 
     public BracketDiagram(BracketTree tree) {
         this.tree = tree;
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         layout(tree.getRoot());
         int width = MARGIN * 2 + (tree.getRounds() + 1) * (BOX_W + COL_GAP) + 80 + BOX_W;
         int height = MARGIN * 2 + tree.getLeafCount() * ROW_GAP;

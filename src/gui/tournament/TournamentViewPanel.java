@@ -1,8 +1,10 @@
-package gui;
+package gui.tournament;
 
 import dsa.BracketTree;
 import dsa.MatchNode;
 import dsa.SinglyLinkedList;
+import gui.BracketDiagram;
+import gui.Theme;
 import model.Standing;
 import model.Team;
 import model.Tournament;
@@ -16,9 +18,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -31,6 +31,7 @@ public class TournamentViewPanel extends JPanel {
     private static final String MATCHES = "Matches";
     private static final String BRACKET = "Bracket";
     private static final String STANDINGS = "Standings";
+    private static final String[] TAB_NAMES = {TEAMS, MATCHES, BRACKET, STANDINGS};
 
     /** A database action that returns an error message (null = success). */
     private interface Action { String run() throws SQLException; }
@@ -47,7 +48,7 @@ public class TournamentViewPanel extends JPanel {
     private final JLabel title = new JLabel();
     private final JLabel subtitle = new JLabel();
     private final JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-    private final Map<String, JButton> tabButtons = new LinkedHashMap<>();
+    private final JButton[] tabButtons = new JButton[TAB_NAMES.length];
     private final JPanel body = new JPanel(new BorderLayout());
 
     public TournamentViewPanel(Tournament tournament, Runnable onBack, Consumer<Tournament> onEdit, Runnable onDeleted) {
@@ -57,7 +58,7 @@ public class TournamentViewPanel extends JPanel {
         this.onDeleted = onDeleted;
 
         setLayout(new BorderLayout(0, 8));
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         setBorder(new EmptyBorder(20, 25, 25, 25));
 
         // ---- header
@@ -87,14 +88,15 @@ public class TournamentViewPanel extends JPanel {
 
         JPanel tabBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
         tabBar.setOpaque(false);
-        for (String name : new String[]{TEAMS, MATCHES, BRACKET, STANDINGS}) {
+        for (int i = 0; i < TAB_NAMES.length; i++) {
+            String name = TAB_NAMES[i];
             JButton b = new JButton(name);
             b.setFont(Theme.BASE);
             b.setContentAreaFilled(false);
             b.setFocusPainted(false);
             b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             b.addActionListener(e -> showTab(name));
-            tabButtons.put(name, b);
+            tabButtons[i] = b;
             tabBar.add(b);
         }
 
@@ -143,9 +145,9 @@ public class TournamentViewPanel extends JPanel {
         } catch (SQLException ex) {
             body.add(message("Could not load data: " + ex.getMessage()), BorderLayout.NORTH);
         }
-        for (Map.Entry<String, JButton> e : tabButtons.entrySet()) {
-            boolean active = e.getKey().equals(name);
-            e.getValue().setBorder(active
+        for (int i = 0; i < TAB_NAMES.length; i++) {
+            boolean active = TAB_NAMES[i].equals(name);
+            tabButtons[i].setBorder(active
                     ? BorderFactory.createCompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(3, 10, 3, 10))
                     : new EmptyBorder(4, 11, 4, 11));
         }
@@ -163,7 +165,7 @@ public class TournamentViewPanel extends JPanel {
 
         actions.removeAll();
         if (tournament.canModify()) {
-            JButton edit = new Theme.Btn("Edit", Theme.YELLOW, Theme.INK);
+            JButton edit = new Theme.Btn("Edit", Theme.MAROON, Theme.INK);
             JButton delete = new Theme.Btn("Delete", new Color(150, 40, 40), Color.WHITE);
             edit.addActionListener(e -> onEdit.accept(tournament));
             delete.addActionListener(e -> deleteTournament());
@@ -181,13 +183,13 @@ public class TournamentViewPanel extends JPanel {
         p.setOpaque(false);
         p.setBorder(new EmptyBorder(14, 0, 0, 0));
 
-        SinglyLinkedList<Team> registered = service.getTeams(tournament);
+        SinglyLinkedList registered = service.getTeams(tournament);
         JLabel count = new JLabel("Registered teams: " + registered.size() + " / " + tournament.getMaxTeams());
         count.setFont(Theme.BOLD);
         p.add(count, BorderLayout.NORTH);
 
         DefaultListModel<Team> model = new DefaultListModel<>();
-        for (Team t : registered) model.addElement(t);
+        for (int i = 0; i < registered.size(); i++) model.addElement((Team) registered.get(i));
         JList<Team> list = new JList<>(model);
         list.setFont(Theme.BASE);
         list.setBackground(TournamentPanel.PANEL_GRAY);
@@ -212,8 +214,9 @@ public class TournamentViewPanel extends JPanel {
             JComboBox<Team> combo = new JComboBox<>();
             combo.setFont(Theme.BASE);
             combo.setPreferredSize(new Dimension(240, 36));
-            for (Team t : service.getAvailableTeams(tournament)) combo.addItem(t);
-            JButton add = new Theme.Btn("Add Team", Theme.YELLOW, Theme.INK);
+            SinglyLinkedList available = service.getAvailableTeams(tournament);
+            for (int i = 0; i < available.size(); i++) combo.addItem((Team) available.get(i));
+            JButton add = new Theme.Btn("Add Team", Theme.MAROON, Theme.INK);
             JButton remove = new Theme.Btn("Remove Selected", new Color(150, 40, 40), Color.WHITE);
             add.addActionListener(e -> {
                 Team team = (Team) combo.getSelectedItem();
@@ -246,7 +249,9 @@ public class TournamentViewPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         List<MatchNode> nodes = new ArrayList<>();
-        for (MatchNode n : tree.getMatches()) {
+        SinglyLinkedList matchList = tree.getMatches();
+        for (int i = 0; i < matchList.size(); i++) {
+            MatchNode n = (MatchNode) matchList.get(i);
             nodes.add(n);
             boolean ready = n.getTeam1() != null && n.getTeam2() != null;
             model.addRow(new Object[]{
@@ -267,7 +272,7 @@ public class TournamentViewPanel extends JPanel {
         if (tournament.getStatus() == Tournament.Status.ONGOING) {
             JPanel row = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
             row.setOpaque(false);
-            JButton record = new Theme.Btn("Record Result", Theme.YELLOW, Theme.INK);
+            JButton record = new Theme.Btn("Record Result", Theme.MAROON, Theme.INK);
             record.addActionListener(e -> {
                 int r = table.getSelectedRow();
                 if (r < 0) {
@@ -313,14 +318,14 @@ public class TournamentViewPanel extends JPanel {
         if (tree == null) return message(noBracketText());
         JScrollPane scroll = new JScrollPane(new BracketDiagram(tree));
         scroll.setBorder(null);
-        scroll.getViewport().setBackground(Theme.GREY);
+        scroll.getViewport().setBackground(Theme.CREAM);
         return scroll;
     }
 
     // --------------------------------------------------------- Standings tab
 
     private JComponent buildStandingsTab() throws SQLException {
-        SinglyLinkedList<Standing> standings = bracketService.getStandings(tournament);
+        SinglyLinkedList standings = bracketService.getStandings(tournament);
         if (standings == null) return message(noBracketText());
 
         String[] cols = {"Rank", "Team", "Played", "Won", "Lost", "Status"};
@@ -328,7 +333,8 @@ public class TournamentViewPanel extends JPanel {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
         int rank = 1;
-        for (Standing s : standings) {
+        for (int i = 0; i < standings.size(); i++) {
+            Standing s = (Standing) standings.get(i);
             model.addRow(new Object[]{rank++, s.getTeamName(), s.getPlayed(), s.getWon(), s.getLost(), s.getState()});
         }
         JTable table = new JTable(model);

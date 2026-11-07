@@ -13,12 +13,12 @@ public class DashboardDAO {
     public int countMatches() throws SQLException { return scalar("SELECT COUNT(*) FROM match_table"); }
 
     /** Latest tournaments as one-line summaries: "Name - Game (registered/max teams)". */
-    public SinglyLinkedList<String> tournamentSummaries(int limit) throws SQLException {
+    public SinglyLinkedList tournamentSummaries(int limit) throws SQLException {
         String sql = "SELECT tr.tournament_name, g.game_name, tr.max_teams, " +
                 "(SELECT COUNT(*) FROM tournament_teams_table tt WHERE tt.tournamentID = tr.tournamentID) AS registered " +
                 "FROM tournament_table tr JOIN games_table g ON tr.gameID = g.gameID " +
                 "ORDER BY tr.tournamentID DESC LIMIT " + limit;
-        SinglyLinkedList<String> lines = new SinglyLinkedList<>();
+        SinglyLinkedList lines = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {

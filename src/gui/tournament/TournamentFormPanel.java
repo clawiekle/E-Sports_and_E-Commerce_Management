@@ -1,6 +1,7 @@
-package gui;
+package gui.tournament;
 
 import dsa.SinglyLinkedList;
+import gui.Theme;
 import model.Game;
 import model.Tournament;
 import service.TournamentService;
@@ -17,7 +18,6 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
-/** Create Tournament screen (also used to edit a tournament that hasn't begun yet). */
 public class TournamentFormPanel extends JPanel {
 
     private final TournamentService service;
@@ -47,7 +47,7 @@ public class TournamentFormPanel extends JPanel {
         timeSpinner.setEditor(new JSpinner.DateEditor(timeSpinner, "hh:mm a"));
 
         setLayout(new BorderLayout(0, 14));
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JLabel heading = new JLabel(edit ? "Edit Tournament" : "Create Tournament");
@@ -55,7 +55,7 @@ public class TournamentFormPanel extends JPanel {
         add(heading, BorderLayout.NORTH);
 
         // ---- yellow card: left = name / game / max teams, right = match format box
-        Theme.Card card = new Theme.Card(Theme.YELLOW, 24);
+        Theme.Card card = new Theme.Card(Theme.MAROON, 24);
         card.setLayout(new GridLayout(1, 2, 30, 0));
         card.setBorder(new EmptyBorder(26, 28, 26, 28));
         card.add(buildLeft());
@@ -73,8 +73,8 @@ public class TournamentFormPanel extends JPanel {
         // ---- Cancel / Create Tournament
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttons.setOpaque(false);
-        JButton cancel = new Theme.Btn("Cancel", Theme.YELLOW_LIGHT, Theme.INK);
-        JButton submit = new Theme.Btn(edit ? "Save Changes" : "Create Tournament", Theme.YELLOW, Theme.INK);
+        JButton cancel = new Theme.Btn("Cancel", Theme.MAROON_LIGHT, Theme.INK);
+        JButton submit = new Theme.Btn(edit ? "Save Changes" : "Create Tournament", Theme.MAROON, Theme.INK);
         cancel.addActionListener(e -> onCancel.run());
         submit.addActionListener(e -> submit());
         buttons.add(cancel);
@@ -154,8 +154,9 @@ public class TournamentFormPanel extends JPanel {
     private void loadGames() {
         gameBox.addItem(new Game(0, "-- Select game --"));
         try {
-            SinglyLinkedList<Game> games = service.getGames();
-            for (Game g : games) gameBox.addItem(g);
+            SinglyLinkedList games = service.getGames();
+            for (int i = 0; i < games.size(); i++)
+                gameBox.addItem((Game) games.get(i));   // cast Object back to Game
         } catch (SQLException ex) {
             errorLabel.setText("Could not load games: " + ex.getMessage());
         }

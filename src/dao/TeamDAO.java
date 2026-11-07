@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class TeamDAO {
 
     /** All teams (with their game name), optionally filtered by team, player or game name. */
-    public SinglyLinkedList<Team> getAll(String search) throws SQLException {
+    public SinglyLinkedList getAll(String search) throws SQLException {
         String sql = "SELECT t.teamID, t.team_name, t.player_name, t.gameID, g.game_name " +
                 "FROM team_table t JOIN games_table g ON t.gameID = g.gameID ";
         boolean filter = search != null && !search.isEmpty();
@@ -20,7 +20,7 @@ public class TeamDAO {
         }
         sql += "ORDER BY t.team_name";
 
-        SinglyLinkedList<Team> teams = new SinglyLinkedList<>();
+        SinglyLinkedList teams = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (filter) {

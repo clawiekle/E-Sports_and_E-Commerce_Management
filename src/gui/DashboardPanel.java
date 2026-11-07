@@ -21,7 +21,7 @@ public class DashboardPanel extends JPanel {
     private final DefaultListModel<String> activityModel = new DefaultListModel<>();
 
     public DashboardPanel() {
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         setLayout(new BorderLayout(0, 20));
         setBorder(new EmptyBorder(25, 25, 25, 25));
 
@@ -59,7 +59,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private static JPanel statCard(String title, JLabel value) {
-        Theme.Card card = new Theme.Card(Theme.YELLOW, 20);
+        Theme.Card card = new Theme.Card(Theme.MAROON, 20);
         card.setLayout(new BorderLayout());
         card.setBorder(new EmptyBorder(16, 10, 10, 10));
         JLabel t = new JLabel(title, SwingConstants.CENTER);
@@ -71,7 +71,7 @@ public class DashboardPanel extends JPanel {
     }
 
     private static JPanel listCard(String heading, DefaultListModel<String> model) {
-        Theme.Card card = new Theme.Card(Theme.YELLOW, 20);
+        Theme.Card card = new Theme.Card(Theme.MAROON, 20);
         card.setLayout(new BorderLayout(0, 8));
         card.setBorder(new EmptyBorder(18, 22, 18, 22));
 
@@ -117,18 +117,18 @@ public class DashboardPanel extends JPanel {
         }
     }
 
-    private static SinglyLinkedList<String> single(String text) {
-        SinglyLinkedList<String> list = new SinglyLinkedList<>();
+    private static SinglyLinkedList single(String text) {
+        SinglyLinkedList list = new SinglyLinkedList();
         list.add(text);
         return list;
     }
 
-    private static void fill(DefaultListModel<String> model, SinglyLinkedList<String> items, String emptyText) {
+    private static void fill(DefaultListModel<String> model, SinglyLinkedList items, String emptyText) {
         model.clear();
         if (items.isEmpty()) {
             model.addElement(emptyText);
             return;
         }
-        for (String item : items) model.addElement(item);
+        for (int i = 0; i < items.size(); i++) model.addElement((String) items.get(i));
     }
 }

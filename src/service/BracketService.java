@@ -32,14 +32,14 @@ public class BracketService {
 
     /** Seeding is a shuffle seeded with the tournament id, so the draw is random but never changes. */
     private BracketTree buildTree(int tournamentId) throws SQLException {
-        SinglyLinkedList<Team> teams = tournamentDAO.getTeams(tournamentId);
+        SinglyLinkedList teams = tournamentDAO.getTeams(tournamentId);
         if (teams.size() < 2) return null;
 
         List<Team> shuffled = new ArrayList<>();
-        for (Team team : teams) shuffled.add(team);
+        for (int i = 0; i < teams.size(); i++) shuffled.add((Team) teams.get(i));
         Collections.shuffle(shuffled, new Random(tournamentId));
 
-        SinglyLinkedList<Team> seeded = new SinglyLinkedList<>();
+        SinglyLinkedList seeded = new SinglyLinkedList();
         for (Team team : shuffled) seeded.add(team);
         return BracketTree.build(seeded, matchDAO.findByTournament(tournamentId));
     }
@@ -66,7 +66,9 @@ public class BracketService {
         BracketTree tree = buildTree(fresh.getTournamentID());
         if (tree == null) return "No bracket available.";
         boolean ready = false;
-        for (MatchNode node : tree.getMatches()) {
+        SinglyLinkedList nodes = tree.getMatches();
+        for (int i = 0; i < nodes.size(); i++) {
+            MatchNode node = (MatchNode) nodes.get(i);
             if (!node.isPlayed() && node.getTeam1() != null && node.getTeam2() != null
                     && node.getTeam1().getTeamID() == team1.getTeamID()
                     && node.getTeam2().getTeamID() == team2.getTeamID()) {
@@ -91,19 +93,21 @@ public class BracketService {
     }
 
     /** Standings by series won, or null while the tournament has not started. */
-    public SinglyLinkedList<Standing> getStandings(Tournament t) throws SQLException {
+    public SinglyLinkedList getStandings(Tournament t) throws SQLException {
         BracketTree tree = getBracket(t);
         if (tree == null) return null;
 
-        SinglyLinkedList<Team> teams = tournamentDAO.getTeams(t.getTournamentID());
-        SinglyLinkedList<Match> matches = matchDAO.findByTournament(t.getTournamentID());
+        SinglyLinkedList teams = tournamentDAO.getTeams(t.getTournamentID());
+        SinglyLinkedList matches = matchDAO.findByTournament(t.getTournamentID());
         Team champion = tree.getChampion();
 
         List<Standing> rows = new ArrayList<>();
-        for (Team team : teams) {
+        for (int i = 0; i < teams.size(); i++) {
+            Team team = (Team) teams.get(i);
             int won = 0;
             int lost = 0;
-            for (Match m : matches) {
+            for (int j = 0; j < matches.size(); j++) {
+                Match m = (Match) matches.get(j);
                 if (m.getTeam1ID() != team.getTeamID() && m.getTeam2ID() != team.getTeamID()) continue;
                 if (m.getWinnerID() == team.getTeamID()) won++;
                 else lost++;
@@ -116,7 +120,7 @@ public class BracketService {
                 : a.getLost() != b.getLost() ? a.getLost() - b.getLost()
                 : a.getTeamName().compareToIgnoreCase(b.getTeamName()));
 
-        SinglyLinkedList<Standing> result = new SinglyLinkedList<>();
+        SinglyLinkedList result = new SinglyLinkedList();
         for (Standing s : rows) result.add(s);
         return result;
     }

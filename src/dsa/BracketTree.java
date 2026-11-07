@@ -3,14 +3,6 @@ package dsa;
 import model.Match;
 import model.Team;
 
-import java.util.Iterator;
-
-/**
- * Single-elimination bracket stored as a binary tree of {@link MatchNode}s.
- * Leaves are the entrants (seeded in the order given), the root is the final.
- * When the team count is not a power of two, some first-round pairs get a BYE so the
- * tree is always complete (e.g. 6 teams -> 8 slots, 2 byes).
- */
 public class BracketTree {
 
     private final MatchNode[][] levels; // levels[0] = leaves ... levels[rounds] = {root}
@@ -21,8 +13,7 @@ public class BracketTree {
         this.rounds = levels.length - 1;
     }
 
-    /** Builds the bracket for 2+ teams and applies every recorded match result. */
-    public static BracketTree build(SinglyLinkedList<Team> teams, SinglyLinkedList<Match> results) {
+    public static BracketTree build(SinglyLinkedList teams, SinglyLinkedList results) {
         int n = teams.size();
         if (n < 2) throw new IllegalArgumentException("A bracket needs at least 2 teams.");
 
@@ -37,10 +28,10 @@ public class BracketTree {
         int pairs = size / 2;
         int byes = size - n;
         Team[] entrants = new Team[size];
-        Iterator<Team> it = teams.iterator();
+        int t = 0;
         for (int i = 0; i < pairs; i++) {
-            entrants[2 * i] = it.next();
-            entrants[2 * i + 1] = (i < byes) ? null : it.next();
+            entrants[2 * i] = (Team) teams.get(t++);
+            entrants[2 * i + 1] = (i < byes) ? null : (Team) teams.get(t++);
         }
 
         MatchNode[][] levels = new MatchNode[rounds + 1][];
@@ -60,17 +51,17 @@ public class BracketTree {
     public int getRounds() { return rounds; }
     public int getLeafCount() { return levels[0].length; }
 
-    /** The tournament winner, or null until the final has been played. */
+
     public Team getChampion() {
         MatchNode root = getRoot();
         return root.isMatch() && root.isPlayed() ? root.getTeam() : null;
     }
 
     /** Every real match, earliest round first. */
-    public SinglyLinkedList<MatchNode> getMatches() {
-        SinglyLinkedList<MatchNode> list = new SinglyLinkedList<>();
+    public SinglyLinkedList getMatches() {
+        SinglyLinkedList list = new SinglyLinkedList();
         for (int r = 1; r <= rounds; r++) {
-            for (MatchNode node : levels[r]) {
+            for (MatchNode node : levels[r]) {      // plain array, so for-each is fine
                 if (node.isMatch()) list.add(node);
             }
         }

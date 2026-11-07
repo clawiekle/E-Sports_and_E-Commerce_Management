@@ -1,6 +1,7 @@
-package gui;
+package gui.tournament;
 
 import dsa.SinglyLinkedList;
+import gui.Theme;
 import model.Tournament;
 import service.TournamentService;
 
@@ -19,11 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TOURNAMENT MANAGEMENT section. Flow (see mockups):
- *   list  --click a row-->  view (Teams / Matches / Bracket / Standings)  --Edit-->  form
- *   list  --"+ Create Tournament"-->  form
- */
+
 public class TournamentPanel extends JPanel {
 
     static final Color PANEL_GRAY = new Color(0xE2, 0xE1, 0xDD);
@@ -45,7 +42,7 @@ public class TournamentPanel extends JPanel {
 
     public TournamentPanel() {
         setLayout(new BorderLayout());
-        setBackground(Theme.GREY);
+        setBackground(Theme.CREAM);
         stack.setOpaque(false);
         stack.add(buildListCard(), LIST);
         add(stack, BorderLayout.CENTER);
@@ -78,7 +75,7 @@ public class TournamentPanel extends JPanel {
         titleRow.add(new AdminBadge(), BorderLayout.EAST);
 
         // "+ Create Tournament" and the search box, right aligned
-        JButton createBtn = new Theme.Btn("+ Create Tournament", Theme.YELLOW, Theme.INK);
+        JButton createBtn = new Theme.Btn("+ Create Tournament", Theme.MAROON, Theme.INK);
         createBtn.addActionListener(e -> showForm(null));
         searchField.setPreferredSize(new Dimension(230, 38));
         searchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -322,9 +319,9 @@ public class TournamentPanel extends JPanel {
         private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MMM d, yyyy");
         private final List<Tournament> rows = new ArrayList<>();
 
-        void setData(SinglyLinkedList<Tournament> data) {
+        void setData(SinglyLinkedList data) {
             rows.clear();
-            for (Tournament t : data) rows.add(t);
+            for (int i = 0; i < data.size(); i++) rows.add((Tournament) data.get(i));
             fireTableDataChanged();
         }
 

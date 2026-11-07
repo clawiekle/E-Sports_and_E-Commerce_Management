@@ -1,67 +1,98 @@
 package dsa;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+class Link
+{
+    public Object dData;
+    public Link next;
 
+    // -------------------------------------------------------------
+    public Link(Object d)  // constructor
+    { dData = d; }
 
-public class SinglyLinkedList<T> implements Iterable<T> {
+    // -------------------------------------------------------------
+    public void displayLink()  // display this link
+    { System.out.print(dData + " "); }
 
-    private static class Node<T> {
-        final T data;
-        Node<T> next;
-
-        Node(T data) { this.data = data; }
-    }
-
-    private Node<T> head;
-    private Node<T> tail;
+}
+public class SinglyLinkedList
+{
+    private Link first;
+    private Link last;
     private int size;
 
+    // -------------------------------------------------------------
+    public SinglyLinkedList()
+    {
+        first = null;
+        last = null;
+        size = 0;
+    }
+    // -------------------------------------------------------------
+    public boolean isEmpty()
+    { return size == 0; }
 
-    public void add(T item) {
-        Node<T> node = new Node<>(item);
-        if (head == null) {
-            head = node;
-        } else {
-            tail.next = node;
-        }
-        tail = node;
+    // -------------------------------------------------------------
+    public int size()
+    { return size; }
+    // -------------------------------------------------------------
+    public void add(Object item)
+    {
+        Link newLink = new Link(item);
+        if( isEmpty() )
+            first = newLink;
+        else
+            last.next = newLink;
+        last = newLink;
         size++;
     }
 
-    public T get(int index) {
-        if (index < 0 || index >= size) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+    // -------------------------------------------------------------
+    public Object get(int index)
+    {
+        if(index < 0 || index >= size)
+        {
+            System.out.println("Index: " + index + ", Size: " + size);
+            return -1;
         }
-        Node<T> current = head;
-        for (int i = 0; i < index; i++) {
+        Link current = first;
+        for(int i = 0; i < index; i++)
             current = current.next;
-        }
-        return current.data;
+        return current.dData;
     }
-
-    public int size() { return size; }
-
-    public boolean isEmpty() { return size == 0; }
-
-    public void clear() {
-        head = null;
-        tail = null;
+    // -------------------------------------------------------------
+    public void clear()
+    {
+        first = null;
+        last = null;
         size = 0;
     }
+    // -------------------------------------------------------------
+    public void displayList()
+    {
+        System.out.print("List (first-->last): ");
+        Link current = first;
+        while(current != null)
+        {
+            current.displayLink();
+            current = current.next;
+        }
+        System.out.println("");
+    }
 
-    @Override public Iterator<T> iterator() {
-        return new Iterator<T>() {
-            private Node<T> current = head;
+}
 
-            @Override public boolean hasNext() { return current != null; }
-
-            @Override public T next() {
-                if (current == null) throw new NoSuchElementException();
-                T data = current.data;
-                current = current.next;
-                return data;
-            }
-        };
+class SinglyLinkedApp
+{
+    public static void main(String[] args)
+    {
+        SinglyLinkedList theList = new SinglyLinkedList();
+        theList.add(22);
+        theList.add(44);
+        theList.add(66);
+        theList.displayList();
+        System.out.println("Item at index 1: " + theList.get(1));
+        System.out.println("Size: " + theList.size());
+        theList.clear();
+        System.out.println("Empty? " + theList.isEmpty());
     }
 }

@@ -18,10 +18,10 @@ public class ActivityDAO {
     }
 
     /** Newest first, each line formatted like "Sep 29, 3:05 PM  -  Team "X" was added". */
-    public SinglyLinkedList<String> recent(int limit) throws SQLException {
+    public SinglyLinkedList recent(int limit) throws SQLException {
         String sql = "SELECT message, DATE_FORMAT(created_at, '%b %e, %l:%i %p') AS t " +
                 "FROM activity_log ORDER BY logID DESC LIMIT ?";
-        SinglyLinkedList<String> lines = new SinglyLinkedList<>();
+        SinglyLinkedList lines = new SinglyLinkedList();
         Connection conn = DatabaseConnection.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);

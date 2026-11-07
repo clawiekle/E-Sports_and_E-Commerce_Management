@@ -15,6 +15,6 @@ public class DashboardService {
     public int tournamentCount() throws SQLException { return dashboardDAO.countTournaments(); }
     public int matchCount() throws SQLException { return dashboardDAO.countMatches(); }
 
-    public SinglyLinkedList<String> tournamentSummaries(int limit) throws SQLException { return dashboardDAO.tournamentSummaries(limit); }
-    public SinglyLinkedList<String> recentActivity(int limit) throws SQLException { return activityDAO.recent(limit); }
+    public SinglyLinkedList tournamentSummaries(int limit) throws SQLException { return dashboardDAO.tournamentSummaries(limit); }
+    public SinglyLinkedList recentActivity(int limit) throws SQLException { return activityDAO.recent(limit); }
 }

@@ -4,13 +4,20 @@ import model.User;
 import service.AuthService;
 import service.LoginResult;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 
@@ -18,23 +25,27 @@ public class LoginFrame extends JFrame {
 
     private static final Font FONT = new Font("Segoe UI", Font.PLAIN, 15);
     private static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 15);
-    private static final Color ERROR_COLOR = new Color(255, 0, 0);
+    private static final Color ERROR_COLOR = new Color(255, 120, 120);
     private static final Color SUCCESS_COLOR = new Color(170, 255, 200);
+    private static final Color HOVER_COLOR = new Color(255, 170, 185);
 
     private final AuthService authService = new AuthService();
     private final Consumer<User> onSuccess;
 
-    private final GlassPanel card = new GlassPanel();
-    private final JLabel title = new JLabel("Login", SwingConstants.CENTER);
+    // the background must be declared before the card, because the card uses it
+    private final Backdrop background = new Backdrop("/image/login_bg.png");
+    private final GlassPanel card = new GlassPanel(background);
+    private final JLabel logo = new JLabel("", SwingConstants.CENTER);
+    private final JLabel title = new JLabel("WELCOME", SwingConstants.CENTER);
     private final JLabel subtitle = new JLabel("E-Sports & E-Commerce Management", SwingConstants.CENTER);
-    private final RoundedField usernameField = new RoundedField("Username", false);
-    private final RoundedField passwordField = new RoundedField("Password", true);
-    private final RoundedField confirmField = new RoundedField("Confirm password", true);
+    private final RoundedField usernameField = new RoundedField("username", false);
+    private final RoundedField passwordField = new RoundedField("password", true);
+    private final RoundedField confirmField = new RoundedField("confirm password", true);
     private final JPanel options = new JPanel(new BorderLayout());
     private final JLabel messageLabel = new JLabel(" ", SwingConstants.CENTER);
-    private final PillButton submitBtn = new PillButton("Log in");
+    private final PillButton submitBtn = new PillButton("LOGIN");
     private final JLabel switchAsk = new JLabel("Don't have an account?");
-    private final JLabel switchLink = new JLabel("Register");
+    private final JLabel switchLink = new JLabel("Sign up.");
 
     private boolean registerMode = false;
 
@@ -47,8 +58,6 @@ public class LoginFrame extends JFrame {
         setMinimumSize(new Dimension(560, 690));
         setLocationRelativeTo(null);
 
-        JPanel background = new JPanel(new GridBagLayout());
-        background.setBackground(Color.BLACK);
         buildCard();
         background.add(card);
         setContentPane(background);
@@ -61,97 +70,116 @@ public class LoginFrame extends JFrame {
     // ---------------------------------------------------------------- layout
 
     private void buildCard() {
-        card.setPreferredSize(new Dimension(440, 640));
+        card.setPreferredSize(new Dimension(360, 540));
         card.setLayout(new GridBagLayout());
-        card.setBorder(BorderFactory.createEmptyBorder(30, 45, 30, 45));
+        card.setBorder(BorderFactory.createEmptyBorder(28, 40, 28, 40));
 
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        title.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        title.setForeground(Color.WHITE);
+        // logo (put your logo at src/images/logo.png; hidden if the file is missing)
+        ImageIcon icon = loadIcon("/image/logo.png", 90);
+        if (icon != null) logo.setIcon(icon);
+        else logo.setVisible(false);
         c.gridy = 0;
-        c.insets = new Insets(0, 0, 4, 0);
+        c.insets = new Insets(0, 0, 8, 0);
+        card.add(logo, c);
+
+        title.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        title.setForeground(Color.WHITE);
+        c.gridy = 1;
+        c.insets = new Insets(0, 0, 2, 0);
         card.add(title, c);
 
-        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        subtitle.setForeground(new Color(255, 255, 255, 190));
-        c.gridy = 1;
-        c.insets = new Insets(0, 0, 32, 0);
-        card.add(subtitle, c);
-
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        subtitle.setForeground(new Color(255, 255, 255, 170));
         c.gridy = 2;
-        c.insets = new Insets(0, 0, 22, 0);
-        card.add(usernameField, c);
+        c.insets = new Insets(0, 0, 28, 0);
+        card.add(subtitle, c);
 
         c.gridy = 3;
         c.insets = new Insets(0, 0, 18, 0);
+        card.add(usernameField, c);
+
+        c.gridy = 4;
+        c.insets = new Insets(0, 0, 14, 0);
         card.add(passwordField, c);
 
-        c.gridy = 4; // only visible in Register mode
+        c.gridy = 5; // only visible in Register mode
         card.add(confirmField, c);
 
         JLabel forgot = new JLabel("Forgot Password?");
-        forgot.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        forgot.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         forgot.setForeground(Color.WHITE);
         forgot.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         forgot.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 JOptionPane.showMessageDialog(LoginFrame.this, "Please contact an administrator to reset your password.");
             }
-            @Override public void mouseEntered(MouseEvent e) { forgot.setForeground(new Color(255, 190, 235)); }
+            @Override public void mouseEntered(MouseEvent e) { forgot.setForeground(HOVER_COLOR); }
             @Override public void mouseExited(MouseEvent e) { forgot.setForeground(Color.WHITE); }
         });
 
         options.setOpaque(false);
-        options.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+        options.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
         options.add(forgot, BorderLayout.EAST);
-        c.gridy = 5; // only visible in Login mode
-        c.insets = new Insets(0, 0, 10, 0);
+        c.gridy = 6; // only visible in Login mode
+        c.insets = new Insets(0, 0, 8, 0);
         card.add(options, c);
 
-        messageLabel.setFont(FONT);
+        messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         messageLabel.setForeground(ERROR_COLOR);
-        c.gridy = 6;
-        c.insets = new Insets(0, 0, 14, 0);
+        c.gridy = 7;
+        c.insets = new Insets(0, 0, 12, 0);
         card.add(messageLabel, c);
 
-        c.gridy = 7;
-        c.insets = new Insets(0, 0, 22, 0);
+        c.gridy = 8;
+        c.insets = new Insets(0, 0, 18, 0);
+        c.fill = GridBagConstraints.NONE;      // button keeps its own (narrower) width
+        c.anchor = GridBagConstraints.CENTER;
         card.add(submitBtn, c);
+        c.fill = GridBagConstraints.HORIZONTAL;
 
         JPanel switchRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
         switchRow.setOpaque(false);
-        switchAsk.setFont(FONT);
+        switchAsk.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         switchAsk.setForeground(new Color(255, 255, 255, 200));
-        switchLink.setFont(FONT_BOLD);
+        switchLink.setFont(new Font("Segoe UI", Font.BOLD, 12));
         switchLink.setForeground(Color.WHITE);
         switchLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         switchLink.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) { setMode(!registerMode); }
-            @Override public void mouseEntered(MouseEvent e) { switchLink.setForeground(new Color(255, 190, 235)); }
+            @Override public void mouseEntered(MouseEvent e) { switchLink.setForeground(HOVER_COLOR); }
             @Override public void mouseExited(MouseEvent e) { switchLink.setForeground(Color.WHITE); }
         });
         switchRow.add(switchAsk);
         switchRow.add(switchLink);
-        c.gridy = 8;
+        c.gridy = 9;
         c.insets = new Insets(0, 0, 0, 0);
         card.add(switchRow, c);
     }
 
+    private static ImageIcon loadIcon(String path, int height) {
+        URL url = LoginFrame.class.getResource(path);
+        if (url == null) return null;
+        ImageIcon raw = new ImageIcon(url);
+        int w = raw.getIconWidth() * height / Math.max(1, raw.getIconHeight());
+        return new ImageIcon(raw.getImage().getScaledInstance(w, height, Image.SCALE_SMOOTH));
+    }
+
     private void setMode(boolean register) {
         registerMode = register;
-        title.setText(register ? "Register" : "Login");
+        title.setText(register ? "REGISTER" : "WELCOME");
         subtitle.setText(register ? "Create your fan account" : "E-Sports & E-Commerce Management");
         setTitle("E-Sports & E-Commerce Management - " + (register ? "Register" : "Login"));
         confirmField.setVisible(register);
         confirmField.setText("");
         options.setVisible(!register);
-        submitBtn.setText(register ? "Register" : "Log in");
+        submitBtn.setText(register ? "REGISTER" : "LOGIN");
         switchAsk.setText(register ? "Already have an account?" : "Don't have an account?");
-        switchLink.setText(register ? "Login" : "Register");
+        switchLink.setText(register ? "Login." : "Sign up.");
         showMessage("", true);
         card.revalidate();
         card.repaint();
@@ -252,32 +280,108 @@ public class LoginFrame extends JFrame {
 
     // ------------------------------------------------------- custom widgets
 
+    /** Sharp full-window background image. Also keeps a blurred copy for the glass card. */
+    private static class Backdrop extends JPanel {
+        private final BufferedImage sharp;
+        private final BufferedImage blurred;
 
+        Backdrop(String resourcePath) {
+            setLayout(new GridBagLayout());
+            setBackground(new Color(20, 12, 16));
+            sharp = load(resourcePath);
+            blurred = sharp == null ? null : blur(sharp);
+        }
+
+        private static BufferedImage load(String path) {
+            try {
+                URL url = LoginFrame.class.getResource(path);
+                return url == null ? null : ImageIO.read(url);
+            } catch (IOException e) {
+                return null;
+            }
+        }
+
+        /** Shrinks the image and softens it; scaling it back up blurs it further. */
+        private static BufferedImage blur(BufferedImage src) {
+            int w = Math.max(1, src.getWidth() / 10);
+            int h = Math.max(1, src.getHeight() / 10);
+            BufferedImage small = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = small.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(src, 0, 0, w, h, null);
+            g.dispose();
+
+            float[] data = new float[25];
+            Arrays.fill(data, 1f / 25f);
+            ConvolveOp op = new ConvolveOp(new Kernel(5, 5, data), ConvolveOp.EDGE_NO_OP, null);
+            small = op.filter(small, null);
+            return op.filter(small, null);
+        }
+
+        /** Draws an image scaled to cover the whole panel (same placement for the sharp and blurred copy). */
+        void drawCover(Graphics2D g2, BufferedImage img) {
+            int pw = getWidth(), ph = getHeight();
+            double scale = Math.max((double) pw / sharp.getWidth(), (double) ph / sharp.getHeight());
+            int w = (int) Math.ceil(sharp.getWidth() * scale);
+            int h = (int) Math.ceil(sharp.getHeight() * scale);
+            g2.drawImage(img, (pw - w) / 2, (ph - h) / 2, w, h, null);
+        }
+
+        BufferedImage getBlurred() { return blurred; }
+
+        @Override protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            if (sharp == null) {
+                g2.setColor(getBackground());
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            } else {
+                drawCover(g2, sharp);
+            }
+            g2.dispose();
+        }
+    }
+
+    /** Frosted glass: paints the blurred part of the background behind it, then a dark tint and a soft edge. */
     private static class GlassPanel extends JPanel {
-        GlassPanel() { setOpaque(false); }
+        private final Backdrop backdrop;
+
+        GlassPanel(Backdrop backdrop) {
+            this.backdrop = backdrop;
+            setOpaque(false);
+        }
 
         @Override protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
             int w = getWidth(), h = getHeight();
             Shape shape = new RoundRectangle2D.Float(1, 1, w - 3, h - 3, 44, 44);
 
+            // blurred copy of the background, lined up with where the card sits
+            if (backdrop.getBlurred() != null) {
+                Point p = SwingUtilities.convertPoint(this, 0, 0, backdrop);
+                Graphics2D clipped = (Graphics2D) g2.create();
+                clipped.setClip(shape);
+                clipped.translate(-p.x, -p.y);
+                backdrop.drawCover(clipped, backdrop.getBlurred());
+                clipped.dispose();
+            }
 
-            g2.setPaint(new RadialGradientPaint(new Point(w / 2, (int) (h * 0.32)), Math.max(w, h) * 0.85f,
-                    new float[]{0f, 0.55f, 1f},
-                    new Color[]{new Color(205, 90, 165, 170), new Color(125, 60, 175, 130), new Color(60, 30, 120, 105)}));
+            // dark grey-blue glass tint
+            g2.setColor(new Color(45, 50, 68, 150));
             g2.fill(shape);
 
-
+            // faint light at the top
             g2.setClip(shape);
-            g2.setPaint(new GradientPaint(0, 0, new Color(255, 255, 255, 55), 0, h * 0.5f, new Color(255, 255, 255, 0)));
+            g2.setPaint(new GradientPaint(0, 0, new Color(255, 255, 255, 40), 0, h * 0.4f, new Color(255, 255, 255, 0)));
             g2.fillRect(0, 0, w, h / 2);
             g2.setClip(null);
 
             // edge
-            g2.setStroke(new BasicStroke(1.6f));
-            g2.setPaint(new GradientPaint(0, 0, new Color(255, 255, 255, 190), 0, h, new Color(255, 255, 255, 90)));
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.setPaint(new GradientPaint(0, 0, new Color(255, 255, 255, 110), 0, h, new Color(255, 255, 255, 40)));
             g2.draw(shape);
             g2.dispose();
         }
@@ -285,6 +389,8 @@ public class LoginFrame extends JFrame {
 
 
     private static class RoundedField extends JPasswordField {
+        private static final Color ICON = new Color(255, 255, 255, 225);
+
         private final String placeholder;
         private final boolean secret;
         private boolean revealed = false;
@@ -293,13 +399,13 @@ public class LoginFrame extends JFrame {
             this.placeholder = placeholder;
             this.secret = secret;
             setOpaque(false);
-            setFont(new Font("Segoe UI", Font.PLAIN, 16));
-            setForeground(new Color(45, 45, 55));
-            setCaretColor(new Color(45, 45, 55));
-            setSelectionColor(new Color(200, 160, 230));
-            setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 52));
+            setFont(new Font("Segoe UI", Font.PLAIN, 15));
+            setForeground(Color.WHITE);
+            setCaretColor(Color.WHITE);
+            setSelectionColor(new Color(150, 40, 70));
+            setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 50));
             setEchoChar(secret ? '\u2022' : (char) 0);
-            setPreferredSize(new Dimension(300, 52));
+            setPreferredSize(new Dimension(280, 44));
 
             if (secret) { // the eye icon toggles show / hide
                 MouseAdapter eyeHandler = new MouseAdapter() {
@@ -335,38 +441,35 @@ public class LoginFrame extends JFrame {
             int w = getWidth(), h = getHeight();
             boolean focus = isFocusOwner();
 
-            // soft drop shadow, then the light-grey body
-            g2.setColor(new Color(0, 0, 0, 45));
-            g2.fillRoundRect(1, 3, w - 2, h - 4, 22, 22);
-            g2.setColor(new Color(244, 244, 247));
-            g2.fillRoundRect(0, 0, w - 1, h - 3, 22, 22);
+            // see-through body
+            g2.setColor(new Color(255, 255, 255, focus ? 85 : 62));
+            g2.fillRoundRect(0, 0, w - 1, h - 1, 14, 14);
 
-            // focus ring
-            g2.setStroke(new BasicStroke(focus ? 2.2f : 1f));
-            g2.setColor(focus ? new Color(230, 110, 190) : new Color(255, 255, 255, 160));
-            g2.drawRoundRect(1, 1, w - 3, h - 5, 22, 22);
+            // border / focus ring
+            g2.setStroke(new BasicStroke(focus ? 1.8f : 1f));
+            g2.setColor(focus ? new Color(230, 90, 120) : new Color(255, 255, 255, 120));
+            g2.drawRoundRect(0, 0, w - 2, h - 2, 14, 14);
 
             super.paintComponent(g2); // the typed text
 
             if (getPassword().length == 0) {
-                g2.setColor(new Color(120, 120, 135));
+                g2.setColor(new Color(255, 255, 255, 150));
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
-                int y = (h - 3 - fm.getHeight()) / 2 + fm.getAscent();
+                int y = (h - fm.getHeight()) / 2 + fm.getAscent();
                 g2.drawString(placeholder, getInsets().left, y);
             }
 
             // icon on the right
-            g2.setColor(new Color(70, 70, 85));
-            int ix = w - 42, iy = (h - 3) / 2;
+            g2.setColor(ICON);
+            int ix = w - 40, iy = h / 2;
             if (secret) drawEye(g2, ix, iy, revealed); else drawPerson(g2, ix + 4, iy);
             g2.dispose();
         }
 
         private void drawEye(Graphics2D g2, int x, int cy, boolean open) {
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            Color ink = new Color(70, 70, 85);
-            g2.setColor(ink);
+            g2.setColor(ICON);
 
             // almond outline
             Path2D eye = new Path2D.Float();
@@ -374,21 +477,14 @@ public class LoginFrame extends JFrame {
             eye.curveTo(x + 6, cy - 10, x + 18, cy - 10, x + 24, cy);
             eye.curveTo(x + 18, cy + 10, x + 6, cy + 10, x, cy);
             eye.closePath();
-            g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.draw(eye);
 
-            // iris + highlight
+            // iris
             g2.fillOval(x + 7, cy - 5, 10, 10);
-            g2.setColor(new Color(244, 244, 247));
-            g2.fillOval(x + 12, cy - 4, 3, 3);
 
             if (!open) {
-                // slash with a small gap around it so it reads cleanly over the eye
-                g2.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(new Color(244, 244, 247));
-                g2.drawLine(x + 3, cy + 9, x + 21, cy - 9);
                 g2.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                g2.setColor(ink);
                 g2.drawLine(x + 3, cy + 9, x + 21, cy - 9);
             }
         }
@@ -402,14 +498,14 @@ public class LoginFrame extends JFrame {
     private static class PillButton extends JButton {
         PillButton(String text) {
             super(text);
-            setFont(new Font("Segoe UI", Font.BOLD, 17));
-            setForeground(new Color(40, 20, 70));
+            setFont(new Font("Segoe UI", Font.BOLD, 16));
+            setForeground(Color.WHITE);
             setContentAreaFilled(false);
             setBorderPainted(false);
             setFocusPainted(false);
             setRolloverEnabled(true);
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            setPreferredSize(new Dimension(300, 48));
+            setPreferredSize(new Dimension(180, 42));
         }
 
         @Override protected void paintComponent(Graphics g) {
@@ -417,19 +513,31 @@ public class LoginFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            Color fill = Color.WHITE;
-            if (!isEnabled()) fill = new Color(255, 255, 255, 120);
-            else if (getModel().isPressed()) fill = new Color(225, 205, 240);
-            else if (getModel().isRollover()) fill = new Color(255, 225, 245);
+            int w = getWidth(), h = getHeight();
+            Color top = new Color(190, 25, 55);
+            Color bottom = new Color(115, 10, 35);
+            if (!isEnabled()) {
+                top = new Color(120, 60, 70);
+                bottom = new Color(80, 40, 50);
+            } else if (getModel().isPressed()) {
+                top = new Color(140, 15, 40);
+                bottom = new Color(90, 5, 28);
+            } else if (getModel().isRollover()) {
+                top = new Color(215, 40, 70);
+                bottom = new Color(135, 15, 42);
+            }
 
-            g2.setColor(fill);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), getHeight(), getHeight());
+            g2.setPaint(new GradientPaint(0, 0, top, 0, h, bottom));
+            g2.fillRoundRect(0, 0, w, h, h, h);
+            g2.setColor(new Color(255, 255, 255, 60));
+            g2.setStroke(new BasicStroke(1f));
+            g2.drawRoundRect(0, 0, w - 1, h - 1, h, h);
 
             g2.setColor(getForeground());
             g2.setFont(getFont());
             FontMetrics fm = g2.getFontMetrics();
-            int x = (getWidth() - fm.stringWidth(getText())) / 2;
-            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+            int x = (w - fm.stringWidth(getText())) / 2;
+            int y = (h - fm.getHeight()) / 2 + fm.getAscent();
             g2.drawString(getText(), x, y);
             g2.dispose();
         }

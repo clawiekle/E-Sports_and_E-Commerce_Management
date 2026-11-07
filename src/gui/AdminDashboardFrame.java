@@ -1,5 +1,6 @@
 package gui;
 
+import gui.tournament.TournamentPanel;
 import model.Admin;
 
 import javax.swing.*;
@@ -35,7 +36,7 @@ public class AdminDashboardFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        content.setBackground(Theme.GREY);
+        content.setBackground(Theme.CREAM);
         content.add(dashboardPanel, DASHBOARD);
         //content.add(teamPanel, TEAMS);
         content.add(tournamentPanel, TOURNAMENTS);
@@ -53,7 +54,7 @@ public class AdminDashboardFrame extends JFrame {
 
     private JPanel buildSidebar() {
         JPanel sidebar = new JPanel();
-        sidebar.setBackground(Theme.YELLOW);
+        sidebar.setBackground(Theme.MAROON);
         sidebar.setPreferredSize(new Dimension(250, 0));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBorder(new EmptyBorder(0, 14, 0, 14));
@@ -177,12 +178,12 @@ public class AdminDashboardFrame extends JFrame {
 
             int w = getWidth(), h = getHeight();
             if (active) {
-                g2.setColor(Theme.YELLOW_DARK);
+                g2.setColor(Theme.MAROON_DARK);
                 g2.fillRoundRect(0, 0, w, h, 14, 14);
                 g2.setColor(Theme.INK);
                 g2.fillRoundRect(0, 8, 4, h - 16, 4, 4);
             } else if (getModel().isRollover()) {
-                g2.setColor(Theme.YELLOW_LIGHT);
+                g2.setColor(Theme.MAROON_LIGHT);
                 g2.fillRoundRect(0, 0, w, h, 14, 14);
             }
 
