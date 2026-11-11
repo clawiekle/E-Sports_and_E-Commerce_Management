@@ -1,6 +1,6 @@
 package main;
 
-import gui.AdminDashboardFrame;
+import gui.admin.AdminDashboardFrame;
 import gui.LoginFrame;
 import model.Admin;
 import model.Fan;

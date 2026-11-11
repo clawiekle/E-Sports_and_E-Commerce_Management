@@ -25,6 +25,7 @@ public class Tournament {
     private LocalDateTime startDateTime;
     private Status status = Status.UPCOMING;
     private int registeredTeams;
+    private String description;
 
     public Tournament() {
     }
@@ -63,6 +64,9 @@ public class Tournament {
 
     public int getRegisteredTeams() { return registeredTeams; }
     public void setRegisteredTeams(int registeredTeams) { this.registeredTeams = registeredTeams; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     /** True once the status moved past UPCOMING or the scheduled date/time has arrived. */
     public boolean hasBegun() {

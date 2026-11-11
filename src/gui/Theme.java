@@ -8,15 +8,29 @@ import java.awt.*;
 public final class Theme {
     private Theme() {}
 
+    // ---- colors
     public static final Color MAROON = new Color(0x49, 0x08, 0x17);        // maroon #490817
     public static final Color MAROON_DARK = new Color(0x6E, 0x1A, 0x2E);   // active / header shade
     public static final Color MAROON_LIGHT = new Color(0x8A, 0x2B, 0x42);  // hover shade
+    public static final Color MAROON_DEEP = new Color(0x30, 0x00, 0x0A);   // active sidebar item
     public static final Color CREAM = new Color(0xFF, 0xF8, 0xE7);          // cream #FFF8E7
     public static final Color INK = new Color(0xFF, 0xF8, 0xE7);           // cream text on maroon
 
+    public static final Color CARD_GRAY = new Color(0xE2, 0xE0, 0xDC);     // dashboard cards
+    public static final Color LINE_GRAY = new Color(0xC8, 0xC6, 0xC2);     // divider lines
+    public static final Color TEXT_DARK = new Color(0x14, 0x14, 0x14);     // dark text on cream / gray
+    public static final Color TEXT_MUTED = new Color(0x78, 0x76, 0x72);    // captions, empty phrases
+    public static final Color SIDEBAR_MUTED = new Color(0x96, 0x82, 0x86); // "GENERAL" label
+
+    // ---- fonts (all Segoe UI)
     public static final Font BASE = new Font("Segoe UI", Font.PLAIN, 14);
     public static final Font BOLD = new Font("Segoe UI", Font.BOLD, 14);
     public static final Font TITLE = new Font("Segoe UI", Font.BOLD, 24);
+    public static final Font BRAND = new Font("Segoe UI", Font.BOLD, 22);
+    public static final Font NAV = new Font("Segoe UI", Font.PLAIN, 14);
+    public static final Font SMALL = new Font("Segoe UI", Font.PLAIN, 12);
+    public static final Font CAPTION = new Font("Segoe UI", Font.PLAIN, 11);
+    public static final Font VALUE = new Font("Segoe UI", Font.BOLD, 32);
 
     /** White rounded-outline look for text fields. */
     public static void styleInput(JComponent c) {
@@ -28,7 +42,7 @@ public final class Theme {
                 new EmptyBorder(7, 10, 7, 10)));
     }
 
-    /** Rounded flat panel (the yellow cards). */
+    /** Rounded flat panel (the cards). */
     public static class Card extends JPanel {
         private final Color fill;
         private final int arc;
